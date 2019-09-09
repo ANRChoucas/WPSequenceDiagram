@@ -1,5 +1,8 @@
 # WPSequenceDiagram
+
 Choucas Workpackage Interaction Sequence Diagram
+
+![Sequence Diagram](https://raw.githubusercontent.com/ANRChoucas/WPSequenceDiagram/master/sequence.png)
 
 ## Dependances
 
