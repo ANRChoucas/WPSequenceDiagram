@@ -1,0 +1,217 @@
+@startuml
+
+/' Paramètres de style  '/
+hide footbox
+skinparam sequence {
+	ActorBackgroundColor #1e4562
+	ActorBorderColor #1e4562
+	ActorFontColor #1e4562
+}
+
+
+/' Définition des acteurs et des services '/
+
+actor "Olivier" as ov
+participant "Visualisation" as vis
+participant "Saisie" as sais
+participant "Traitement \ntexte" as txt
+participant "Extraction et fourniture \nd'objets spatiaux" as ext
+participant "Génération triplets" as gt
+participant "Spatialisation" as spa
+participant "Agrégation" as fus
+
+
+/' Positionnement des services et définition des groupes '/
+
+box "Grenoble"
+    participant vis
+    participant sais
+end box
+
+box "Pau"
+    participant txt
+end box
+
+participant ext
+
+participant "WFS IGN" as ign
+participant "WFS OSM" as osm
+participant "Fusion"
+
+
+participant gt
+
+box "Paris"
+    participant spa
+    participant fus
+end box
+
+
+/' Définition séquence affichage carte '/
+
+ov -> vis: Affichage carte
+activate vis
+
+
+/' Séquence définition zone de recherche '/
+
+== Définition zone de recherche ==
+
+ov -> vis: Sélection zone
+activate vis
+
+group Extraction et fourniture d'objets spatiaux
+
+    vis -> ext: Sélection géographique
+    activate ext
+
+    alt Requête mono-service
+    	alt Requête IGN
+	    ext -> ign: getFeatures
+	    activate ign
+	    ext <-- ign: Objets spatiaux
+	    deactivate ign
+	else Requête OSM
+             ext -> osm: getFeatures
+	     activate osm
+	     ext <-- osm: Objets spatiaux
+	     deactivate osm
+	end
+    else Requête multi-services
+    	/'Requête IGN'/
+        ext -> ign: getFeatures
+	activate ign
+	ext <-- ign: Objets spatiaux
+	deactivate ign
+
+	/'Requête OSM'/
+	ext -> osm: getFeatures
+	activate osm
+	ext <-- osm: Objets spatiaux
+	deactivate osm
+
+	/'Fusion IGN&OSM'/
+	ext -> "Fusion": Demande de fusion
+	activate "Fusion"
+	ext <-- "Fusion": Objets spatiaux (fusionnés)
+	deactivate "Fusion"
+    end
+
+    vis <-- ext:  Objets spatiaux
+    deactivate ext
+    activate vis
+end
+
+ov <-- vis: done
+
+
+/' Séquence identification d'objets spatiaux '/
+
+== Identification d'objets spatiaux ==
+
+alt Sélection d'un objet spatial déjà chargé
+    ov -> vis: Sélection objet spatial
+    activate vis
+    ov <-- vis: done
+    deactivate vis
+else Sélection de cordonnées
+     ov -> vis: Pointage coordonnées
+     activate vis
+     vis <- vis:  Coordonnées
+     ov <-- vis: done
+     deactivate vis
+else Requête langage naturel
+     ov -> sais: Saisie indice langage naturel
+     activate sais
+     sais -> txt: Annotation indice
+     deactivate sais
+     activate txt
+
+     group Extraction et fourniture d'objets spatiaux
+     	   txt -> ext: Géocodage
+	   deactivate txt
+	   activate ext
+
+	   alt Requête mono-service
+	       alt Requête IGN
+	       	   ext -> ign: getFeatures
+	       	   activate ign
+	       	   ext <-- ign: Objets spatiaux
+		   deactivate ign
+	       else Requête OSM
+	           ext -> osm: getFeatures
+		   activate osm
+		   ext <-- osm: Objets spatiaux
+		   deactivate osm
+	      end
+	   else Requête multi-services
+	      ext -> ign: getFeatures
+	      activate ign
+	      ext <-- ign: Objets spatiaux
+	      deactivate ign
+
+	      ext -> osm: getFeatures
+	      activate osm
+	      ext <-- osm: Objets spatiaux
+	      deactivate osm
+
+	      ext -> "Fusion": Demande de fusion
+	      activate "Fusion"
+	      ext <-- "Fusion": Objets spatiaux (fusionnés)
+	      deactivate "Fusion"
+end
+
+    vis <-- ext:  Objets spatiaux
+    deactivate ext
+    activate vis
+
+end
+
+activate vis
+ov <-- vis: done
+end
+
+
+/' Séquence spatialisation '/
+
+== Spatialisation ==
+
+ov -> vis: Paramétrage spatialisation
+vis -> gt: Conversion des objets et des relations spatiales en triplets
+activate gt
+gt -> spa: Demande de spatialisation
+deactivate gt
+activate spa
+vis <-- spa: Zones de localisation compatibles
+deactivate spa
+activate vis
+ov <-- vis: done
+
+
+/'Séquence agrégation'/
+
+== Agrégation ==
+
+ov -> vis: Paramétrage agrégation
+
+note left
+Appel facultatif
+end note
+
+vis -> fus: Demande d’agrégation
+activate fus
+vis <-- fus: Zone de localisation probable
+deactivate fus
+activate vis
+ov <-- vis: done
+
+
+/' Fin diagramme '/
+
+deactivate vis
+deactivate vis
+deactivate vis
+deactivate vis
+deactivate vis
+deactivate vis
+@enduml
