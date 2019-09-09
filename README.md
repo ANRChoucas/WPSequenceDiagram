@@ -40,3 +40,8 @@ plantuml -tsvg ./sequence.plantuml
 Manualy (on web):
 
 Go to: https://www.planttext.com/
+
+
+## Diagram Modifications
+
+Documentation: http://plantuml.com/en/sequence-diagram
