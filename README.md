@@ -4,6 +4,10 @@ Choucas Workpackage Interaction Sequence Diagram
 
 ![Sequence Diagram](https://raw.githubusercontent.com/ANRChoucas/WPSequenceDiagram/master/sequence.png)
 
+Updated version for 26/01/2021 meeting :
+
+![Sequence Diagram v20210126](sequence-20210126.png)
+
 ## Dependances
 
 Plantuml: http://plantuml.com/
@@ -34,10 +38,10 @@ Manualy (local):
 
 ```bash
 # png version
-plantuml ./sequence.plantuml
+plantuml *.plantuml
 
 # svg version
-plantuml -tsvg ./sequence.plantuml
+plantuml -tsvg *.plantuml
 ```
 
 Manualy (on web):

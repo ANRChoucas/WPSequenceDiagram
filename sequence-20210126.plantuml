@@ -1,0 +1,126 @@
+@startuml
+
+/' Paramètres de style  '/
+hide footbox
+skinparam sequence {
+	ActorBackgroundColor #1e4562
+	ActorBorderColor #1e4562
+	ActorFontColor #1e4562
+}
+
+
+/' Définition des acteurs et des services '/
+
+actor "Utilisateur" as ov
+participant "Visualisation" as vis
+participant "Saisie" as sais
+participant "Fourniture \nd'objets spatiaux" as ext
+participant "Spatialisation" as spa
+participant "Fusion" as fus
+
+
+/' Positionnement des services et définition des groupes '/
+
+box "Interface\nGASPAR"
+    participant vis
+    participant sais
+end box
+
+
+box "BD Neo4j\nGASPAR.0"
+  participant ext
+end box
+
+box "Service\nRuitor"
+    participant spa
+    participant fus
+end box
+
+
+/' Définition séquence affichage carte '/
+
+ov -> vis: Affichage carte
+activate vis
+
+
+/' Séquence définition zone de recherche '/
+
+== Définition Zone Initiale de Recherche ==
+
+ov -> vis: Sélection zone
+activate vis
+
+group Extraction et fourniture d'objets spatiaux
+
+    vis -> ext: Sélection géographique
+    activate ext
+
+    vis <-- ext:  Objets spatiaux
+    deactivate ext
+    activate vis
+end
+
+ov <-- vis: done
+
+
+/' Séquence identification d'objets spatiaux '/
+
+== Identification d'objets spatiaux (création d'indice) ==
+
+alt Sélection d'un objet spatial déjà chargé
+    ov -> vis: Sélection objet spatial
+    activate vis
+    ov <-- vis: done
+    deactivate vis
+else Sélection de cordonnées
+     ov -> vis: Pointage coordonnées
+     activate vis
+     vis <- vis:  Coordonnées
+     ov <-- vis: done
+     deactivate vis
+
+end
+
+
+/' Séquence spatialisation '/
+
+== Spatialisation ==
+
+ov -> sais: Paramétrage spatialisation
+sais -> spa: Demande de spatialisation
+activate spa
+vis <-- spa: Zone de Localisation Compatible
+deactivate spa
+activate vis
+ov <-- vis: done
+
+
+/'Séquence Fusion'/
+
+== Fusion ==
+
+ov -> sais: Paramétrage fusion
+
+note left
+  Appel facultatif
+  conditionné par l'existence
+  d'au moins 2 indices
+end note
+
+sais -> fus: Demande de fusion
+activate fus
+vis <-- fus: Zone de Localisation Probable
+deactivate fus
+activate vis
+ov <-- vis: done
+
+
+/' Fin diagramme '/
+
+deactivate vis
+deactivate vis
+deactivate vis
+deactivate vis
+deactivate vis
+
+@enduml
